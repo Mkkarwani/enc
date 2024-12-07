@@ -1,7 +1,7 @@
 {
     "short_name": "ENC Viewer",
     "name": "Offline ENC Viewer",
-    "start_url": "/enc/index.html",
+    "start_url": "/l/index.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#007bff",
