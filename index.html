@@ -1,257 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENC Viewer PWA</title>
-  <link rel="manifest" href="./manifest.json">
-
-  <meta name="theme-color" content="#007bff">
-  <style>
-    body {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install PWA</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <style>
+        body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #f0f0f0;
-            overflow: hidden;
-        }
-
-        #pdfContainer {
-            height: 100vh;
-            overflow-y: scroll;
-            background-color: #fff;
-        }
-
-        canvas {
-            display: block;
-            margin: 10px auto;
-            border: 1px solid #ddd;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        .page-info {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            z-index: 1000;
-        }
-
-        .file-upload {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 10px;
+            height: 100vh;
+            background-color: #f0f0f0;
         }
 
-        .file-upload label {
-            background-color: #007bff;
-            color: #fff;
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        button {
             padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
         }
 
-        .file-upload label:hover {
+        button:hover {
             background-color: #0056b3;
         }
 
-        .file-upload input[type="file"] {
-            display: none;
-        }
-
-        .file-name {
+        .message {
+            margin-top: 10px;
             font-size: 14px;
-            color: #333;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 200px;
+            color: #555;
         }
-
-        @media (max-width: 768px) {
-            .file-upload label {
-                padding: 8px 15px;
-                font-size: 12px;
-            }
-
-            .file-name {
-                font-size: 12px;
-                max-width: 150px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .file-upload label {
-                padding: 6px 10px;
-                font-size: 10px;
-            }
-
-            .file-name {
-                font-size: 10px;
-                max-width: 100px;
-            }
-        }
-  </style>
+    </style>
 </head>
 <body>
-  <!-- Your existing HTML structure -->
-  <div class="file-upload">
-        <label for="fileInput">Select File</label>
-        <input type="file" id="fileInput" accept=".enc" onchange="handleFileSelection(event)">
-        <span class="file-name" id="fileName">No file selected</span>
+    <div class="container">
+        <h1>Install ENC Viewer PWA</h1>
+        <button id="installButton">Install App</button>
+        <div class="message" id="message"></div>
     </div>
-    <div class="page-info" id="pageInfo">Page 0 of 0</div>
-    <div id="pdfContainer"></div>
 
-<button id="installButton" style="display: none; position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Install App
-    </button>
+    <script>
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        const message = document.getElementById('message');
 
-    <!-- Include PDF.js library as an ES module -->
-    <script type="module">
-        import * as pdfjsLib from './pdfjs/pdf.mjs';
+        // Listen for beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredPrompt = event;
+            installButton.style.display = 'block';
+            message.textContent = 'Click the button to install the PWA.';
+        });
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.mjs';
-
-        let pdfDoc = null;
-        let isRendering = false;
-        let currentPage = 1;
-
-        const pdfContainer = document.getElementById('pdfContainer');
-        const pageInfo = document.getElementById('pageInfo');
-        const fileNameSpan = document.getElementById('fileName');
-
-        function handleFileSelection(event) {
-            const file = event.target.files[0];
-            if (!file || !file.name.endsWith('.enc')) {
-                alert("Please upload a valid .enc file.");
-                return;
-            }
-
-            fileNameSpan.textContent = file.name;
-
-            const renamedFile = new File([file], file.name.replace(/\.enc$/, '.pdf'), { type: 'application/pdf' });
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const pdfData = e.target.result;
-                pdfjsLib.getDocument({ data: pdfData }).promise
-                    .then(function (pdf) {
-                        pdfDoc = pdf;
-                        currentPage = 1;
-                        renderPage(currentPage); // Render the first page
-                        updatePageInfo();
-                    })
-                    .catch(function () {
-                        alert("Failed to load the PDF. Please ensure the file is valid.");
-                    });
-            };
-
-            reader.readAsArrayBuffer(renamedFile);
-        }
-
-        function renderPage(pageNum) {
-            if (isRendering || pageNum > pdfDoc.numPages || pageNum < 1) {
-                return;
-            }
-
-            isRendering = true;
-            pdfDoc.getPage(pageNum).then(function (page) {
-                const viewport = page.getViewport({ scale: 1.5 });
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                canvas.dataset.pageNumber = pageNum;
-                pdfContainer.appendChild(canvas);
-
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-
-                page.render(renderContext).promise.then(function () {
-                    isRendering = false;
+        installButton.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        message.textContent = 'App installed successfully!';
+                    } else {
+                        message.textContent = 'Installation canceled.';
+                    }
+                    deferredPrompt = null;
                 });
-            });
-        }
-
-        function updatePageInfo() {
-            const containerTop = pdfContainer.getBoundingClientRect().top;
-            const canvases = Array.from(pdfContainer.querySelectorAll('canvas'));
-
-            for (const canvas of canvases) {
-                const rect = canvas.getBoundingClientRect();
-                if (rect.top >= containerTop && rect.bottom <= window.innerHeight) {
-                    currentPage = parseInt(canvas.dataset.pageNumber, 10);
-                    break;
-                }
-            }
-
-            pageInfo.textContent = `Page ${currentPage} of ${pdfDoc.numPages}`;
-        }
-
-        pdfContainer.addEventListener('scroll', function () {
-            updatePageInfo();
-
-            if (!isRendering && currentPage < pdfDoc.numPages) {
-                const lastCanvas = pdfContainer.querySelector('canvas:last-of-type');
-                const rect = lastCanvas.getBoundingClientRect();
-
-                if (rect.bottom < window.innerHeight) {
-                    renderPage(currentPage + 1);
-                }
             }
         });
 
-        window.handleFileSelection = handleFileSelection;
+        // Hide the button if already installed
+        window.addEventListener('appinstalled', () => {
+            installButton.style.display = 'none';
+            message.textContent = 'App is already installed.';
+        });
     </script>
-  <script type="module">
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the default mini-infobar
-    e.preventDefault();
-    deferredPrompt = e;
-
-    // Show an "Install" button or custom prompt
-    const installButton = document.createElement('button');
-    installButton.textContent = 'Install App';
-    installButton.style = 'position: fixed; bottom: 20px; right: 20px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;';
-    document.body.appendChild(installButton);
-
-    installButton.addEventListener('click', () => {
-        installButton.style.display = 'none';
-        deferredPrompt.prompt();
-
-        // Wait for user response
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('PWA Installed');
-            } else {
-                console.log('PWA Installation Dismissed');
-            }
-            deferredPrompt = null;
-        });
-    });
-});
-
-
+  <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(() => console.log('Service Worker Registered'))
-        .catch((err) => console.error('Service Worker Registration Failed:', err));
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log('Service Worker Registered'))
+            .catch((err) => console.error('Service Worker Registration Failed:', err));
     }
   </script>
 </body>
