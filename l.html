@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENC Viewer PWA</title>
+    <link rel="manifest" href="/Hariji/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #pdfContainer {
+            height: 80vh;
+            overflow-y: auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            margin: 20px auto;
+            padding: 10px;
+            width: 90%;
+            max-width: 900px;
+        }
+
+        .file-upload, #installButton {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #installButton {
+            display: none;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #installButton:hover {
+            background: #0056b3;
+        }
+
+        canvas {
+            display: block;
+            margin: 10px auto;
+            width: 100%;
+            max-width: 900px;
+        }
+    </style>
+</head>
+<body>
+    <div class="file-upload">
+        <label for="fileInput">Select ENC File</label>
+        <input type="file" id="fileInput" accept=".enc" onchange="handleFileSelection(event)">
+    </div>
+    <button id="installButton">Install App</button>
+    <div id="pdfContainer"></div>
+
+    <script type="module">
+        import * as pdfjsLib from '/Hariji/pdfjs/pdf.mjs';
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/Hariji/pdfjs/pdf.worker.mjs';
+
+        let deferredPrompt;
+
+        // Listen for beforeinstallprompt to show the Install button
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredPrompt = event;
+            const installButton = document.getElementById('installButton');
+            installButton.style.display = 'block';
+
+            installButton.addEventListener('click', () => {
+                installButton.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User installed the app.');
+                    } else {
+                        console.log('User dismissed the install prompt.');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+
+        // File reader for ENC files
+        const pdfContainer = document.getElementById('pdfContainer');
+        const fileInput = document.getElementById('fileInput');
+        let pdfDoc = null;
+
+        function handleFileSelection(event) {
+            const file = event.target.files[0];
+            if (!file || !file.name.endsWith('.enc')) {
+                alert("Please select a valid .enc file.");
+                return;
+            }
+
+            const renamedFile = new File([file], file.name.replace(/\\.enc$/, '.pdf'), { type: 'application/pdf' });
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const pdfData = e.target.result;
+                pdfjsLib.getDocument({ data: pdfData }).promise
+                    .then((pdf) => {
+                        pdfDoc = pdf;
+                        renderPage(1);
+                    })
+                    .catch(() => {
+                        alert('Failed to load the PDF.');
+                    });
+            };
+
+            reader.readAsArrayBuffer(renamedFile);
+        }
+
+        function renderPage(pageNum) {
+            pdfDoc.getPage(pageNum).then((page) => {
+                const viewport = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                pdfContainer.innerHTML = '';
+                pdfContainer.appendChild(canvas);
+
+                page.render({ canvasContext: ctx, viewport }).promise.then(() => {
+                    console.log('Page rendered');
+                });
+            });
+        }
+
+        // Register the service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/Hariji/service-worker.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch((err) => console.error('Service Worker Registration Failed:', err));
+        }
+    </script>
+</body>
+</html>
