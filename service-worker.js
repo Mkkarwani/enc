@@ -1,12 +1,12 @@
 const CACHE_NAME = 'enc-viewer-cache-v1';
 const OFFLINE_FILES = [
-  './Hariji/',
-  './Hariji/index.html',
-  './Hariji/pdfjs/pdf.mjs',
-  './Hariji/pdfjs/pdf.worker.mjs',
-  './Hariji/manifest.json',
-  './Hariji/icons/icon-192x192.png',
-  './Hariji/icons/icon-512x512.png',
+  './enc/',
+  './enc/index.html',
+  './enc/pdfjs/pdf.mjs',
+  './enc/pdfjs/pdf.worker.mjs',
+  './enc/manifest.json',
+  './enc/icons/icon-192x192.png',
+  './enc/icons/icon-512x512.png',
 ];
 
 self.addEventListener('install', (event) => {
