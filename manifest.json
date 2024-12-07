@@ -1,7 +1,7 @@
 {
     "short_name": "ENC pdf Viewer",
     "name": "Offline ENC Viewer",
-    "start_url": "/l/index.html",
+    "start_url": "/enc/l.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#007bff",
