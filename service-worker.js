@@ -1,12 +1,12 @@
 const CACHE_NAME = 'enc-viewer-cache-v1';
 const OFFLINE_FILES = [
-  './',
-  './l.html',
-  './pdfjs/pdf.mjs',
-  './pdfjs/pdf.worker.mjs',
-  './manifest.json',
-  './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
+  '/enc/',
+  '/enc/l.html',
+  '/enc/pdfjs/pdf.mjs',
+  '/enc/pdfjs/pdf.worker.mjs',
+  '/enc/manifest.json',
+  '/enc/icons/icon-192x192.png',
+  '/enc/icons/icon-512x512.png',
 ];
 
 self.addEventListener('install', (event) => {
