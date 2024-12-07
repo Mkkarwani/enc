@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENC Viewer PWA</title>
-    <link rel="manifest" href="/Hariji/manifest.json">
+    <link rel="manifest" href="/enc/manifest.json">
     <meta name="theme-color" content="#007bff">
     <style>
         body {
@@ -65,9 +65,9 @@
     <div id="pdfContainer"></div>
 
     <script type="module">
-        import * as pdfjsLib from '/Hariji/pdfjs/pdf.mjs';
+        import * as pdfjsLib from '/enc/pdfjs/pdf.mjs';
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/Hariji/pdfjs/pdf.worker.mjs';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/enc/pdfjs/pdf.worker.mjs';
 
         let deferredPrompt;
 
@@ -141,7 +141,7 @@
 
         // Register the service worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/Hariji/service-worker.js')
+            navigator.serviceWorker.register('/enc/service-worker.js')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.error('Service Worker Registration Failed:', err));
         }
