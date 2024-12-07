@@ -1,5 +1,5 @@
 {
-    "short_name": "ENC Viewer",
+    "short_name": "ENC pdf Viewer",
     "name": "Offline ENC Viewer",
     "start_url": "/l/index.html",
     "display": "standalone",
