@@ -119,9 +119,9 @@
 
     <!-- Include PDF.js library as an ES module -->
     <script type="module">
-        import * as pdfjsLib from './enc/pdfjs/pdf.mjs';
+        import * as pdfjsLib from './pdfjs/pdf.mjs';
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './enc/pdfjs/pdf.worker.mjs';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.mjs';
 
         let pdfDoc = null;
         let isRendering = false;
@@ -249,7 +249,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./enc/service-worker.js')
+      navigator.serviceWorker.register('./service-worker.js')
         .then(() => console.log('Service Worker Registered'))
         .catch((err) => console.error('Service Worker Registration Failed:', err));
     }
